@@ -1,0 +1,4 @@
+.github/actions/zulip-send/node_modules/**
+dex/base/config.yaml
+**/.result.yml
+**/.result/**

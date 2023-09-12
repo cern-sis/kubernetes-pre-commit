@@ -1,0 +1,37 @@
+default_stages: [pre-commit, pre-merge-commit]
+repos:
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.10.1
+    hooks:
+      - id: pyupgrade
+        args: [--py36-plus]
+
+  - repo: local
+    hooks:
+      - id: check-yaml-extensions
+        name: Check for '.yaml' files.
+        entry: Only '.yml' extensions are allowed.
+        language: fail
+        files: '.*\.yaml$'
+        exclude: '.pre-commit-config.yaml'
+
+  - repo: https://github.com/prettier/prettier
+    rev: '1.18.2'
+    hooks:
+      - id: prettier
+        args: ['--config', '.prettierrc.yml', '--write']
+
+  - repo: local
+    hooks:
+      - id: render-manifests
+        name: Render manifests
+        language: script
+        entry: .pre-commit-hooks/render.py
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: mixed-line-ending

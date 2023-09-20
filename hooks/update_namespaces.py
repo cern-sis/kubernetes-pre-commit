@@ -25,9 +25,10 @@ def ns_prefix(path, doc):
     (p, e) = os.path.split(path)
     dash = lambda c: '-'.join([p, e, c])
 
-    if 'namespace' in doc['metadata']:
-        current = doc['metadata']['namespace']
-        doc['metadata']['namespace'] = dash(current)
+    if 'metadata' in doc:
+        if 'namespace' in doc['metadata']:
+            current = doc['metadata']['namespace']
+            doc['metadata']['namespace'] = dash(current)
 
     if 'subjects' in doc:
         for subject in doc['subjects']:

@@ -21,12 +21,10 @@ repos:
       - id: prettier
         args: ['--config', '.prettierrc.yml', '--write']
 
-  - repo: local
+  - repo: https://github.com/cern-sis/kubernetes-pre-commit
+    rev: v1.0.0
     hooks:
       - id: render-manifests
-        name: Render manifests
-        language: script
-        entry: .pre-commit-hooks/render.py
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

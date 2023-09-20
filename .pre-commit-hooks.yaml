@@ -1,0 +1,9 @@
+- id: render-manifests
+  name: Render manifests
+  language: script
+  entry: hooks/render.py
+
+- id: update-namespaces
+  name: Update namespaces
+  language: script
+  entry: hooks/update_namespaces.py

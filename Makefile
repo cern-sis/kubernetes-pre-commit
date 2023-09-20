@@ -1,44 +1,32 @@
-.PHONY: all update clean
+.PHONY: all
 
 SHELL = /bin/bash -O dotglob -c
 
-config_files = .pre-commit-config.yaml .prettierrc.yml .prettierignore .pre-commit-hooks requirements.txt
+files = Makefile requirements.txt .prettierrc.yml .prettierignore .pre-commit-config.yaml
 hooks = pre-commit pre-merge-commit
 venv = .venv
+ref = main
 
 
-define repo
-	wget -LO main https://codeload.github.com/cern-sis/kubernetes-pre-commit/zip/refs/heads/main
-	unzip -ou main -x "kubernetes-pre-commit-main/README.md" "kubernetes-pre-commit-main/.gitignore"
-	mv kubernetes-pre-commit-main/* .
-	rm -rf kubernetes-pre-commit-main main
+define fetch
+	rm -f $(strip $(1))
+	wget https://raw.githubusercontent.com/cern-sis/kubernetes-pre-commit/$(ref)/$(strip $(1))
 endef
 
 define in_venv
 	source $(venv)/bin/activate &&
 endef
 
-define requirements
-	$(in_venv) pip install --upgrade pip
-	$(in_venv) pip install -r requirements.txt
-endef
-
 all: .git/hooks/$(hooks)
 
-update: clean all
+$(files):
+	$(call fetch, $(@F))
+	git add $(@F)
 
-clean:
-	rm -rf $(config_files)
-	rm -rf $(venv)
-	rm -f $(addprefix .git/hooks/, $(hooks))
-
-$(config_files):
-	$(repo)
-	git add $(config_files)
-
-$(venv): $(config_files)
+$(venv): $(files)
 	python -m venv $(venv)
-	$(requirements)
+	$(in_venv) pip install --upgrade pip
+	$(in_venv) pip install -r requirements.txt
 
 .git/hooks/$(hooks): $(venv)
 	$(in_venv) pre-commit install -t $(@F)

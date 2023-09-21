@@ -11,7 +11,7 @@ def render(path):
     file = path / RESULT_FILE
 
     with open(file, 'w') as f:
-        kustomize = subprocess.run(
+        subprocess.run(
             [
                 'kustomize',
                 'build',
@@ -20,6 +20,8 @@ def render(path):
                 path,
             ],
             universal_newlines=True,
+            encoding="utf8",
+            check=True,
             stdout=f,
         )
 
@@ -27,7 +29,9 @@ def render(path):
 
 def git_stage(files):
     subprocess.run(
-        ['git', 'add'] + files
+        ['git', 'add'] + files,
+        encoding="utf8",
+        check=True,
     )
 
 def main():

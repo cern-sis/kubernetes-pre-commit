@@ -17,16 +17,22 @@ def yq(file):
 
     os.makedirs(directory)
 
-    subprocess.call([
-        'yq',
-        '-s',
-        f'"{directory}/" + .metadata.annotations."sis.cern/appset"',
-        file,
-    ])
+    subprocess.run(
+        [
+            'yq',
+            '-s',
+            f'"{directory}/" + .metadata.annotations."sis.cern/appset"',
+            file,
+        ],
+        encoding="utf8",
+        check=True,
+    )
 
 def git_stage(files):
-    subprocess.call(
-        ['git', 'add'] + files
+    subprocess.run(
+        ['git', 'add'] + files,
+        encoding="utf8",
+        check=True,
     )
 
 def main():

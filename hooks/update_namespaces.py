@@ -11,22 +11,32 @@ def yq(file):
     (p, e) = os.path.split(file.parent)
     prefix = f'{p}-{e}-'
 
-    subprocess.call([
-        'yq',
-        '-i',
-        f'(.metadata | select(has("namespace")).namespace) |= "{prefix}" + .',
-        file,
-    ])
-    subprocess.call([
-        'yq',
-        '-i',
-        f'(. | select(.kind == "ClusterRoleBinding").subjects.[].namespace) |= "{prefix}" + .',
-        file,
-    ])
+    subprocess.run(
+        [
+            'yq',
+            '-i',
+            f'(.metadata | select(has("namespace")).namespace) |= "{prefix}" + .',
+            file,
+        ],
+        encoding="utf8",
+        check=True,
+    )
+    subprocess.call(
+        [
+            'yq',
+            '-i',
+            f'(. | select(.kind == "ClusterRoleBinding").subjects.[].namespace) |= "{prefix}" + .',
+            file,
+        ],
+        encoding="utf8",
+        check=True,
+    )
 
 def git_stage(files):
-    subprocess.call(
-        ['git', 'add'] + files
+    subprocess.run(
+        ['git', 'add'] + files,
+        encoding="utf8",
+        check=True,
     )
 
 def main():

@@ -2,41 +2,27 @@
 
 import os
 import subprocess
-from ruamel.yaml import YAML
 from pathlib import Path
 
 
 RESULT_FILE = '.result.yml'
 
-def update(path):
-    file = path / RESULT_FILE
+def yq(file):
+    (p, e) = os.path.split(file.parent)
+    prefix = f'{p}-{e}-'
 
-    yaml = YAML(typ='safe')
-    yaml.default_flow_style = False
-    yaml.explicit_start = True
-    yaml.indent(mapping=2, sequence=4, offset=2)
-
-    docs = [ns_prefix(path, doc) for doc in yaml.load_all(file)]
-    yaml.dump_all(docs, file)
-
-    return file
-
-def ns_prefix(path, doc):
-    (p, e) = os.path.split(path)
-    dash = lambda c: '-'.join([p, e, c])
-
-    if 'metadata' in doc:
-        if 'namespace' in doc['metadata']:
-            current = doc['metadata']['namespace']
-            doc['metadata']['namespace'] = dash(current)
-
-    if 'subjects' in doc:
-        for subject in doc['subjects']:
-            if 'namespace' in subject:
-                current = subject['namespace']
-                subject['namespace'] = dash(current)
-
-    return doc
+    subprocess.call([
+        'yq',
+        '-i',
+        f'(.metadata | select(has("namespace")).namespace) |= "{prefix}" + .',
+        file,
+    ])
+    subprocess.call([
+        'yq',
+        '-i',
+        f'(. | select(.kind == "ClusterRoleBinding").subjects.[].namespace) |= "{prefix}" + .',
+        file,
+    ])
 
 def git_stage(files):
     subprocess.call(
@@ -44,11 +30,11 @@ def git_stage(files):
     )
 
 def main():
-    directories = [
-        k.parent for k in Path().rglob('kustomization.yml')
+    files = [
+        k.parent / RESULT_FILE for k in Path().rglob('kustomization.yml')
     ]
 
-    files = [ update(d) for d in directories ]
+    [ yq(f) for f in files ]
 
     git_stage(files)
 

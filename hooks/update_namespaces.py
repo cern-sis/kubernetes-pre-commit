@@ -22,7 +22,7 @@ def yq(file):
         encoding="utf8",
         check=True,
     )
-    subprocess.call(
+    subprocess.run(
         [
             'yq',
             '-i',

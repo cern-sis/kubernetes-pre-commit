@@ -3,6 +3,7 @@
 import os
 import subprocess
 from pathlib import Path
+from multiprocessing import Pool
 
 
 RESULT_FILE = '.result.yml'
@@ -44,7 +45,9 @@ def main():
         k.parent / RESULT_FILE for k in Path().rglob('kustomization.yml')
     ]
 
-    [ yq(f) for f in files ]
+    files_count = len(files)
+    pool = Pool(files_count if files_count >0 else 1)
+    pool.map(yq, files)
 
     git_stage(files)
 

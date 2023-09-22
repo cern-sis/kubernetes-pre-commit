@@ -4,6 +4,8 @@ import subprocess
 import os
 from pathlib import Path
 from itertools import tee, chain
+from multiprocessing import Pool
+
 
 RESULT_FILE = '.result.yml'
 
@@ -39,7 +41,9 @@ def main():
         k.parent for k in Path().rglob('kustomization.yml')
     ]
 
-    files = [ render(d) for d in directories ]
+    dir_count = len(directories)
+    pool = Pool(dir_count if dir_count >0 else 1)
+    files = pool.map(render, directories)
 
     git_stage(files)
 

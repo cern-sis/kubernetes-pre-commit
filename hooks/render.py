@@ -12,20 +12,14 @@ RESULT_FILE = '.result.yml'
 def render(path):
     file = path / RESULT_FILE
 
-    with open(file, 'w') as f:
-        subprocess.run(
-            [
-                'kustomize',
-                'build',
-                '--load-restrictor',
-                'LoadRestrictionsNone',
-                path,
-            ],
-            universal_newlines=True,
-            encoding="utf8",
-            check=True,
-            stdout=f,
-        )
+    subprocess.run(
+        f'''
+        kustomize build --load-restrictor LoadRestrictionsNone {path} >{file}
+        ''',
+        encoding="utf8",
+        check=True,
+        shell=True,
+    )
 
     return file
 

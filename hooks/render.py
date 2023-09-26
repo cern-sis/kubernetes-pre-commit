@@ -30,15 +30,45 @@ def render(args, path):
     ]
 
     if args.update_namespace:
-        prefix = f'{path.stem}-'
+        (project, environment) = path.parts[-2:]
+        if project == environment:
+            prefix = project
+        else:
+            prefix = f'{project}-{environment}'
 
         cmds.append([
             'yq',
-            f'(.metadata | select(has("namespace"))).namespace |= "{prefix}" + .',
+            f'''
+            ( .metadata
+            | select(
+                has("namespace") and
+                .namespace != "{prefix}"
+                )
+            ).namespace |= "{prefix}-" + .
+            | ( .metadata
+            | select(
+                has("namespace") and
+                .namespace == "{project}"
+                )
+            ).namespace |= . + "-{environment}"
+            ''',
         ])
         cmds.append([
             'yq',
-            f'(. | select(.kind == "ClusterRoleBinding")).subjects.[].namespace |= "{prefix}" + .',
+            f'''
+            ( .
+            | select(
+                .kind == "ClusterRoleBinding" and
+                .subjects.[].namespace != "{prefix}"
+                )
+            ).subjects.[].namespace |= "{prefix}-" + .
+            | ( .
+            | select(
+                .kind == "ClusterRoleBinding" and
+                .subjects.[].namespace == "{project}"
+                )
+            ).subjects.[].namespace |= . + "-{environment}"
+            ''',
         ])
 
     cmds.append([ 'tee', f'{file}' ])
@@ -54,29 +84,29 @@ def render(args, path):
         cmds.append([
             'yq',
             '-s',
-            f'"{directory}/" + .metadata.annotations."sis.cern/appset"',
+            f'''
+            "{directory}/" + (.metadata.annotations."sis.cern/appset" // "default")
+            ''',
         ])
 
 
-    procs = []
-    with ExitStack() as stack:
-        for c in cmds:
-            # use stdout from the previous process if available
-            stdin = procs[-1].stdout if procs else None
+    previous = None
+    for i, c in enumerate(cmds):
+        # use stdout from the previous process if available
+        stdin = previous.stdout if previous else None
+        stdout = PIPE if i < len(cmds) else None
 
-            p = stack.enter_context(
-                Popen(
-                    c,
-                    stdin=stdin,
-                    stdout=PIPE,
-                    stderr=sys.stderr,
-                )
-            )
+        previous = Popen(
+            c,
+            stdin=stdin,
+            stdout=stdout,
+            stderr=sys.stderr,
+        )
 
-            if stdin:
-                stdin.close()
+        if stdin:
+            stdin.close()
 
-            procs.append(p)
+    previous.communicate()
 
 
 def git_stage(args, directories):

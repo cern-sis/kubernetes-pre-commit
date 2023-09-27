@@ -14,10 +14,12 @@ import sys
 
 RESULT_FILE = '.result.yml'
 RESULT_DIR = '.result'
+SPLIT_ON = 'sis.cern/base'
 
 
 def render(args, path):
     file = path / RESULT_FILE
+    directory = path / RESULT_DIR
 
     cmds = [
         [
@@ -38,6 +40,7 @@ def render(args, path):
 
         cmds.append([
             'yq',
+            'ea',
             f'''
             ( .metadata
             | select(
@@ -55,6 +58,7 @@ def render(args, path):
         ])
         cmds.append([
             'yq',
+            'ea',
             f'''
             ( .
             | select(
@@ -74,21 +78,24 @@ def render(args, path):
     cmds.append([ 'tee', f'{file}' ])
 
     if args.split_files:
-        directory = path / RESULT_DIR
-
         if directory.exists():
             shutil.rmtree(directory)
 
         os.makedirs(directory)
 
+        ## Splitting yaml document into files where each reasulting files
+        ## contains multiple documents is only doable in two passes.
+        ## https://github.com/mikefarah/yq/discussions/1799
         cmds.append([
             'yq',
+            'ea',
+            f'[.] | group_by(.metadata.annotations."{SPLIT_ON}") | .[] | split_doc',
             '-s',
             f'''
-            "{directory}/" + (.metadata.annotations."sis.cern/appset" // "default")
+            "{directory}/" + .[0].metadata.annotations."{SPLIT_ON}"
+            // "missing-annotation"
             ''',
         ])
-
 
     previous = None
     for i, c in enumerate(cmds):
@@ -107,6 +114,14 @@ def render(args, path):
             stdin.close()
 
     previous.communicate()
+
+    if args.split_files:
+        ## Second pass of the split
+        Popen(
+            f'find {directory}/*.yml -exec yq ".[] | split_doc" -i {{}} \;',
+            shell=True,
+            stderr=sys.stderr,
+        ).communicate()
 
 
 def git_stage(args, directories):

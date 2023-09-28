@@ -110,7 +110,7 @@ def git_stage(args, directories):
             'git',
             'add',
         ] + to_stage
-    )
+    ).communicate()
 
 def main():
     parser = argparse.ArgumentParser()

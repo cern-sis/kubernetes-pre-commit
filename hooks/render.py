@@ -55,11 +55,10 @@ def render(args, path):
     cmds.append([ 'tee', f'{file}' ])
 
     if args.split_files:
-        if directory.exists():
-            shutil.rmtree(directory)
-
         if not directory.exists():
             os.makedirs(directory)
+
+        [f.unlink() for f in directory.rglob("*")]
 
         ## Splitting yaml document into files where each reasulting files
         ## contains multiple documents is only doable in two passes.

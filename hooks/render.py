@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import shlex
 from pathlib import Path
 from itertools import tee, chain
 from multiprocessing import Pool
@@ -42,11 +43,13 @@ def render(args, path):
             'yq',
             'ea',
             f'( .metadata | select(has("namespace") and .namespace != "{prefix}")).namespace |= "{prefix}-" + . | (.metadata | select(has("namespace") and .namespace == "{project}")).namespace |= . + "-{environment}"',
+            '-',
         ])
         cmds.append([
             'yq',
             'ea',
             f'(. | select( .kind == "ClusterRoleBinding" and .subjects.[].namespace != "{prefix}")).subjects.[].namespace |= "{prefix}-" + . | ( . | select( .kind == "ClusterRoleBinding" and .subjects.[].namespace == "{project}")).subjects.[].namespace |= . + "-{environment}"',
+            '-',
         ])
 
     cmds.append([ 'tee', f'{file}' ])
@@ -66,6 +69,7 @@ def render(args, path):
             f'[.] | group_by(.metadata.annotations."{SPLIT_ON}") | .[] | split_doc',
             '-s',
             f'"{directory}/" + .[0].metadata.annotations."{SPLIT_ON}" // "missing-annotation"',
+            '-',
         ])
 
     previous = None

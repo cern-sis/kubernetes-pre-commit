@@ -58,7 +58,8 @@ def render(args, path):
         if directory.exists():
             shutil.rmtree(directory)
 
-        os.makedirs(directory)
+        if not directory.exists():
+            os.makedirs(directory)
 
         ## Splitting yaml document into files where each reasulting files
         ## contains multiple documents is only doable in two passes.

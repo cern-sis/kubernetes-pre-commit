@@ -32,7 +32,9 @@ def render(args, path):
         ]
     ]
 
-    if args.update_namespace:
+    print(path)
+    print(args.namespace_exclude)
+    if args.update_namespace and path not in args.namespace_exclude:
         (project, environment) = path.parts[-2:]
         if project == environment:
             prefix = project
@@ -112,9 +114,18 @@ def git_stage(args, directories):
         ] + to_stage
     ).communicate()
 
+def dir_path(string):
+    path = Path(string)
+
+    if path.is_dir():
+        return path
+    else:
+        raise NotADirectoryError(string)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-ns', '--update-namespace', action='store_true')
+    parser.add_argument('--namespace-exclude', nargs='*', type=dir_path)
     parser.add_argument('-sp', '--split-files', action='store_true')
     parser.add_argument('changes', nargs='*')
 

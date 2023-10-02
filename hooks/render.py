@@ -42,7 +42,7 @@ def render(args, path):
         cmds.append([
             'yq',
             'ea',
-            f'( .metadata | select(has("namespace") and .namespace != "{prefix}")).namespace |= "{prefix}-" + . | (.metadata | select(has("namespace") and .namespace == "{project}")).namespace |= . + "-{environment}"',
+            f'(. | select( .kind != "SealedSecret" ) | .metadata | select(has("namespace") and .namespace != "{prefix}")).namespace |= "{prefix}-" + . | (.metadata | select(has("namespace") and .namespace == "{project}")).namespace |= . + "-{environment}"',
             '-',
         ])
         cmds.append([

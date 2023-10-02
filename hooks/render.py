@@ -125,7 +125,7 @@ def dir_path(string):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-ns', '--update-namespace', action='store_true')
-    parser.add_argument('--namespace-exclude', nargs='*', type=dir_path)
+    parser.add_argument('--namespace-exclude', action='append', type=dir_path)
     parser.add_argument('-sp', '--split-files', action='store_true')
     parser.add_argument('changes', nargs='*')
 

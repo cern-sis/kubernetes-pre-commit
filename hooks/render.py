@@ -32,8 +32,6 @@ def render(args, path):
         ]
     ]
 
-    print(path)
-    print(args.namespace_exclude)
     if args.update_namespace and path not in args.namespace_exclude:
         (project, environment) = path.parts[-2:]
         if project == environment:

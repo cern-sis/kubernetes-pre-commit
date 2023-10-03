@@ -34,10 +34,7 @@ def render(args, path):
 
     if args.update_namespace and path not in args.namespace_exclude:
         (project, environment) = path.parts[-2:]
-        if project == environment:
-            prefix = project
-        else:
-            prefix = f'{project}-{environment}'
+        prefix = f'{project}-{environment}'
 
         cmds.append([
             'yq',

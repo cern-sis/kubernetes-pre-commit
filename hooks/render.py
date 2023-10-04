@@ -57,6 +57,8 @@ def render(args, path):
 
         [f.unlink() for f in directory.rglob("*")]
 
+        dead_letter = directory.parent / "dead-letter.yml"
+
         ## Splitting yaml document into files where each reasulting files
         ## contains multiple documents is only doable in two passes.
         ## https://github.com/mikefarah/yq/discussions/1799
@@ -65,7 +67,7 @@ def render(args, path):
             'ea',
             f'[.] | group_by(.metadata.annotations."{SPLIT_ON}") | .[] | split_doc',
             '-s',
-            f'"{directory}/" + .[0].metadata.annotations."{SPLIT_ON}" // "missing-annotation"',
+            f'("{directory}/" + .[0].metadata.annotations."{SPLIT_ON}") // "{dead_letter}"',
             '-',
         ])
 

@@ -45,7 +45,7 @@ def render(args, path):
         cmds.append([
             'yq',
             'ea',
-            f'(. | select( .kind == "ClusterRoleBinding" and .subjects.[].namespace != "{prefix}")).subjects.[].namespace |= "{prefix}-" + . | ( . | select( .kind == "ClusterRoleBinding" and .subjects.[].namespace == "{project}")).subjects.[].namespace |= . + "-{environment}"',
+            f'(. | select((.kind | test("RoleBinding")) and .subjects.[].namespace != "{prefix}")).subjects.[].namespace |= "{prefix}-" + . | (. | select((.kind | test( "RoleBinding")) and .subjects.[].namespace == "{project}")).subjects.[].namespace |= . + "-{environment}"',
             '-',
         ])
 

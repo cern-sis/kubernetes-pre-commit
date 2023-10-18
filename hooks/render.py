@@ -28,6 +28,7 @@ def render(args, path):
             'build',
             '--load-restrictor',
             'LoadRestrictionsNone',
+            '--enable-helm',
             f'{path}',
         ]
     ]
